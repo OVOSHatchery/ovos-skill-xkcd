@@ -1,7 +1,7 @@
 from mycroft import MycroftSkill, intent_file_handler, intent_handler
 import requests
 import random
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from mycroft.skills.core import resting_screen_handler
 from lingua_franca.format import nice_date
 from lingua_franca.parse import extract_number
@@ -52,22 +52,21 @@ class XKCDSkill(MycroftSkill):
         try:
             today = datetime.today()
             if not self.settings.get("ts"):
-                self.settings["ts"] = today.timestamp()
+                self.settings["ts"] = (today - timedelta(days=1)).timestamp()
             if today.timestamp() != self.settings["ts"] or \
                     not self.settings.get('imgLink'):
                 self.settings["raw_data"] = self.get_latest()
-                self.settings["ts"] = today.timestamp()
                 comic_date = date(day=int(self.settings["raw_data"]["day"]),
                                   month=int(
                                       self.settings["raw_data"]["month"]),
                                   year=int(self.settings["raw_data"]["year"]))
                 self.settings["imgLink"] = self.settings["raw_data"]["img"]
-                self.settings["title"] = self.settings["raw_data"][
-                    "safe_title"]
+                self.settings["title"] = self.settings["raw_data"]["safe_title"]
                 self.settings["caption"] = self.settings["raw_data"]["alt"]
                 self.settings["date"] = str(comic_date)
                 self.settings["spoken_date"] = nice_date(comic_date,
                                                          lang=self.lang)
+                self.settings["ts"] = comic_date.timestamp()
 
         except Exception as e:
             self.log.exception(e)
