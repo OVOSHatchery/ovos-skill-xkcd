@@ -1,0 +1,25 @@
+{
+  "name": "Xkcd Comics Skill",
+  "skillname": "skill-xkcd",
+  "authorname": "JarbasSkills",
+  "foldername": "",
+  "url": "https://github.com/JarbasSkills/skill-xkcd",
+  "branch": "master",
+  "desktopFile": false,
+  "warning": "",
+  "systemDeps": false,
+  "platforms": [
+    "arm",
+    "arm64",
+    "i386",
+    "x86_64",
+    "ia64"
+  ],
+  "examples": [
+    "open the xkcd website",
+    "show me the latest xkcd comic",
+    "random xkcd",
+    "display comic number 2020",
+    "how many xkcd comics"
+  ]
+}

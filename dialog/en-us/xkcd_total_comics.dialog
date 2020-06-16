@@ -1,0 +1,3 @@
+XKCD has created {{ number }} comics to date
+There are {{ number }} XKCD comics as of today
+Currently {{ number }} XKCD comics exist
