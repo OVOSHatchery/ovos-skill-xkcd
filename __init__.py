@@ -23,12 +23,14 @@ class XKCDSkill(MycroftSkill):
 
     def initialize(self):
         self.add_event('skill-xkcd.jarbasskills.home', self.handle_homescreen)
+        self.gui.register_handler('skill-xkcd.jarbasskills.nextprev', self.set_random_image_data)
         if not self.settings.get("idle_random"):
             self.settings["idle_random"] = True
 
     # homescreen
     def handle_homescreen(self, message):
-        self.gui.show_url("https://xkcd.com/", override_idle=True)
+        self.set_random_image_data()
+        self.gui.show_page("home.qml", override_idle=True)
 
     # idle screen
     @resting_screen_handler("xkcd")
@@ -130,6 +132,15 @@ class XKCDSkill(MycroftSkill):
                             title=title,
                             fill='PreserveAspectFit')
 
+    def set_random_image_data(self):
+        number = random.randint(1, self.total_comics())
+        data = self.get_comic(number)
+        print(number)
+        print(data["img"])
+        self.gui['imgLink'] = data["img"]
+        self.gui['title'] = data["safe_title"]
+        self.gui['caption'] = data["alt"]
+        
 
 def create_skill():
     return XKCDSkill()
