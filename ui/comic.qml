@@ -59,7 +59,7 @@ Mycroft.Delegate {
             }
             
             onClicked: {
-                triggerGuiEvent('skill-xkcd.jarbasskills.nextprev', {})
+                triggerGuiEvent('skill-xkcd.jarbasskills.prev', {})
             }
             
             Keys.onReturnPressed: {
@@ -106,7 +106,7 @@ Mycroft.Delegate {
             }
             
             onClicked: {
-                triggerGuiEvent('skill-xkcd.jarbasskills.nextprev', {})
+                triggerGuiEvent('skill-xkcd.jarbasskills.next', {})
             }
             
             Keys.onReturnPressed: {
