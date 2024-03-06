@@ -1,16 +1,19 @@
-from mycroft import MycroftSkill, intent_file_handler, intent_handler
-from adapt.intent import IntentBuilder
 import random
-from datetime import datetime, date, timedelta
-from mycroft.skills.core import resting_screen_handler
+from datetime import date, timedelta
+
 from lingua_franca.format import nice_date
 from lingua_franca.parse import extract_number
+from ovos_workshop.decorators import intent_handler
+from ovos_workshop.decorators import resting_screen_handler
+from ovos_workshop.intents import IntentBuilder
+from ovos_workshop.skills import OVOSSkill
 from requests_cache import CachedSession
 
 
-class XKCDSkill(MycroftSkill):
-    def __init__(self):
-        super().__init__("XKCDSkill")
+class XKCDSkill(OVOSSkill):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         if not self.settings.get("idle_random"):
             self.settings["idle_random"] = True
         self.session = CachedSession(backend='memory',
@@ -26,7 +29,8 @@ class XKCDSkill(MycroftSkill):
 
     # xkcd api
     def get_comic(self, number):
-        return self.session.get("http://xkcd.com/" + str(number) + "/info.0.json").json()
+        return self.session.get("http://xkcd.com/" + str(number) +
+                                "/info.0.json").json()
 
     def total_comics(self):
         return self.get_latest()["num"]
@@ -52,17 +56,14 @@ class XKCDSkill(MycroftSkill):
             data = self.get_comic(number)
             url = data["img"]
             title = data["safe_title"]
-            self.gui.show_image(url,
-                                title=title,
-                                fill='PreserveAspectFit')
+            self.gui.show_image(url, title=title, fill='PreserveAspectFit')
         self.set_context("XKCD", number)
 
     def update_latest(self):
         try:
             self.settings["raw_data"] = self.get_latest()
             comic_date = date(day=int(self.settings["raw_data"]["day"]),
-                              month=int(
-                                  self.settings["raw_data"]["month"]),
+                              month=int(self.settings["raw_data"]["month"]),
                               year=int(self.settings["raw_data"]["year"]))
             self.settings["imgLink"] = self.settings["raw_data"]["img"]
             self.settings["title"] = self.settings["raw_data"]["safe_title"]
@@ -81,21 +82,20 @@ class XKCDSkill(MycroftSkill):
         self.gui['caption'] = self.settings['caption']
 
     # intents
-    @intent_file_handler("total_comics.intent")
+    @intent_handler("total_comics.intent")
     def handle_total_xkcd_intent(self, message):
-        self.speak_dialog("xkcd_total_comics",
-                          {"number": self.total_comics()})
+        self.speak_dialog("xkcd_total_comics", {"number": self.total_comics()})
         self.gui.show_text(str(self.total_comics()) + " comics")
 
-    @intent_file_handler("xkcd_website.intent")
+    @intent_handler("xkcd_website.intent")
     def handle_website_xkcd_intent(self, message):
         self.gui.show_url("https://xkcd.com/", override_idle=True)
 
-    @intent_file_handler("latest_xkcd.intent")
+    @intent_handler("latest_xkcd.intent")
     def handle_xkcd_intent(self, message):
         self.display_comic(self.total_comics())
 
-    @intent_file_handler("xkcd_comic.intent")
+    @intent_handler("xkcd_comic.intent")
     def handle_xkcd_comic_intent(self, message):
         number = extract_number(message.data["utterance"],
                                 lang=self.lang,
@@ -108,22 +108,23 @@ class XKCDSkill(MycroftSkill):
         self.current_comic = number
         self.display_comic(number)
 
-    @intent_file_handler("random_xkcd_comic.intent")
+    @intent_handler("random_xkcd_comic.intent")
     def handle_xkcd_random_intent(self, message):
         number = random.randint(1, self.total_comics())
         self.display_comic(number)
 
-    @intent_handler(IntentBuilder("PrevXKCDIntent")
-                    .require("previous").optionally("picture")
-                    .require("XKCD"))
+    @intent_handler(
+        IntentBuilder("PrevXKCDIntent").require("previous").optionally(
+            "picture").require("XKCD"))
     def handle_prev_comic(self, message=None):
         number = self.current_comic - 1
         if number < 1:
             number = 1
         self.display_comic(number)
 
-    @intent_handler(IntentBuilder("NextXKCDIntent")
-                    .require("next").optionally("picture").require("XKCD"))
+    @intent_handler(
+        IntentBuilder("NextXKCDIntent").require("next").optionally(
+            "picture").require("XKCD"))
     def handle_next_comic(self, message=None):
         number = self.current_comic + 1
         if number > self.total_comics():
@@ -142,7 +143,3 @@ class XKCDSkill(MycroftSkill):
         self.set_context("XKCD", str(number))
         if speak:
             self.speak(data["alt"], wait=True)
-        
-
-def create_skill():
-    return XKCDSkill()
